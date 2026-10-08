@@ -28,7 +28,7 @@ end
 
 
 function LoaderSystem:CreateLoader(Config)
-    local Title = "Flareon | Hub"
+    local Title = "Flareon Hub"
     local Description = Config.Description or "Choose your script..."
     local MainScriptURL = Config.MainScriptURL or "https://raw.githubusercontent.com/silencedevs/SilenceScripts/refs/heads/main/Scripts/MuscleLegends/Main.luau"
     local FastFarmingURL = Config.FastFarmingURL or "https://raw.githubusercontent.com/silencedevs/SilenceScripts/refs/heads/main/Scripts/MuscleLegends/Farming.luau"
@@ -198,7 +198,7 @@ local FooterText = Create("TextLabel", {
 
 local FooterGlow = Create("TextLabel", {
     Font = Enum.Font.FredokaOne,
-    Text = "Made with  ❄️  by Flareon",
+    Text = "(M)Made by Flareon",
     TextColor3 = Color3.fromRGB(150, 220, 255),
     TextTransparency = 0.85,
     TextSize = 15,
