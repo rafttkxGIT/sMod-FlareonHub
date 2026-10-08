@@ -949,7 +949,7 @@ KeySystem:CreateKeySystem({
 	SaveKey = true,
 	MainScriptCallback = function(success)
 		if success then
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/silencedevs/SilenceScripts/refs/heads/main/Loader/Supported.luau"))()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/rafttkxGIT/sMod-FlareonHub/refs/heads/main/Flareon_Hub_Loader.lua"))()
 
 			getgenv().Get = setmetatable({}, {
 				__index = function(_, serviceName)
