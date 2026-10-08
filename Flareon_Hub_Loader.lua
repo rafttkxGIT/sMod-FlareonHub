@@ -33,13 +33,13 @@ function LoaderSystem:CreateLoader(Config)
     local MainScriptURL = Config.MainScriptURL or "https://raw.githubusercontent.com/silencedevs/SilenceScripts/refs/heads/main/Scripts/MuscleLegends/Main.luau"
     local FastFarmingURL = Config.FastFarmingURL or "https://raw.githubusercontent.com/silencedevs/SilenceScripts/refs/heads/main/Scripts/MuscleLegends/Farming.luau"
     
-    -- Flareon flame colors
-    local FlameOrange = Color3.fromRGB(255, 140, 0)
-    local BrightFlame = Color3.fromRGB(255, 180, 0)
-    local DarkOrange = Color3.fromRGB(200, 100, 0)
-    local AccentOrange = Color3.fromRGB(255, 165, 0)
-    local NeonFlame = Color3.fromRGB(255, 200, 50)
-    local DeepOrange = Color3.fromRGB(210, 110, 0)
+    -- Flareon blue colors (right side sun)
+    local FlameBlue = Color3.fromRGB(100, 200, 255)
+    local BrightBlue = Color3.fromRGB(150, 220, 255)
+    local DarkBlue = Color3.fromRGB(50, 150, 220)
+    local AccentBlue = Color3.fromRGB(120, 210, 255)
+    local NeonBlue = Color3.fromRGB(180, 240, 255)
+    local DeepBlue = Color3.fromRGB(70, 180, 240)
 
     local LoaderGui = Create("ScreenGui", {
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
@@ -49,7 +49,7 @@ function LoaderSystem:CreateLoader(Config)
        (gethui and gethui() or game:GetService("CoreGui")))
 
     local BlurBackground = Create("Frame", {
-        BackgroundColor3 = Color3.fromRGB(180, 80, 0),
+        BackgroundColor3 = Color3.fromRGB(50, 150, 200),
         BackgroundTransparency = 0.5,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 1, 0),
@@ -59,10 +59,10 @@ function LoaderSystem:CreateLoader(Config)
 
     local BackgroundGradient = Create("UIGradient", {
         Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0.0, Color3.fromRGB(220, 100, 0)),
-            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(200, 80, 0)),
-            ColorSequenceKeypoint.new(0.7, Color3.fromRGB(150, 60, 0)),
-            ColorSequenceKeypoint.new(1.0, Color3.fromRGB(80, 30, 0))
+            ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 200, 255)),
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(80, 180, 240)),
+            ColorSequenceKeypoint.new(0.7, Color3.fromRGB(60, 150, 220)),
+            ColorSequenceKeypoint.new(1.0, Color3.fromRGB(20, 80, 150))
         },
         Rotation = 45
     }, BlurBackground)
@@ -77,7 +77,7 @@ function LoaderSystem:CreateLoader(Config)
     for i = 1, 25 do
         local particleSize = math.random(1, 6)
         local particle = Create("Frame", {
-            BackgroundColor3 = i <= 15 and FlameOrange or (i <= 20 and NeonFlame or BrightFlame),
+            BackgroundColor3 = i <= 15 and FlameBlue or (i <= 20 and NeonBlue or BrightBlue),
             BackgroundTransparency = math.random(70, 90) / 100,
             BorderSizePixel = 0,
             Size = UDim2.new(0, particleSize, 0, particleSize),
@@ -133,7 +133,7 @@ function LoaderSystem:CreateLoader(Config)
     Create("UICorner", {CornerRadius = UDim.new(0, 18)}, LoaderContainer)
 
     local BorderStroke = Create("UIStroke", {
-        Color = FlameOrange,
+        Color = FlameBlue,
         Thickness = 2.5,
         Transparency = 0.2,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -145,7 +145,7 @@ function LoaderSystem:CreateLoader(Config)
             AnchorPoint = Vector2.new(0.5, 0.5),
             Position = UDim2.new(0.5, 0, 0.5, 0),
             Size = UDim2.new(1, glowSize, 1, glowSize),
-            BackgroundColor3 = i == 1 and FlameOrange or (i == 2 and NeonFlame or BrightFlame),
+            BackgroundColor3 = i == 1 and FlameBlue or (i == 2 and NeonBlue or BrightBlue),
             BackgroundTransparency = 0.8 + (i * 0.05),
             BorderSizePixel = 0,
             ZIndex = LoaderContainer.ZIndex - i
@@ -173,7 +173,7 @@ function LoaderSystem:CreateLoader(Config)
 }, LoaderContainer)
 
 local FooterLine = Create("Frame", {
-    BackgroundColor3 = FlameOrange,
+    BackgroundColor3 = FlameBlue,
     BackgroundTransparency = 0.6,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 20, 0, 0),
@@ -184,8 +184,8 @@ local FooterLine = Create("Frame", {
 
 local FooterText = Create("TextLabel", {
     Font = Enum.Font.FredokaOne,
-    Text = "Made with  🔥  by Flareon",
-    TextColor3 = Color3.fromRGB(255, 140, 0),
+    Text = "Made with  ❄️  by Flareon",
+    TextColor3 = Color3.fromRGB(100, 200, 255),
     TextSize = 15,
     TextTransparency = 0,
     BackgroundTransparency = 1,
@@ -198,8 +198,8 @@ local FooterText = Create("TextLabel", {
 
 local FooterGlow = Create("TextLabel", {
     Font = Enum.Font.FredokaOne,
-    Text = "Made with  🔥  by Flareon",
-    TextColor3 = Color3.fromRGB(255, 180, 0),
+    Text = "Made with  ❄️  by Flareon",
+    TextColor3 = Color3.fromRGB(150, 220, 255),
     TextTransparency = 0.85,
     TextSize = 15,
     BackgroundTransparency = 1,
@@ -215,7 +215,7 @@ local FooterGlow = Create("TextLabel", {
         Text = "×",
         TextColor3 = Color3.fromRGB(255, 255, 255),
         TextSize = 22,
-        BackgroundColor3 = FlameOrange,
+        BackgroundColor3 = FlameBlue,
         BackgroundTransparency = 0.3,
         BorderSizePixel = 0,
         Size = UDim2.new(0, 40, 0, 40),
@@ -243,7 +243,7 @@ local FooterGlow = Create("TextLabel", {
     local TitleLabel = Create("TextLabel", {
         Font = Enum.Font.FredokaOne,
         Text = Title,
-        TextColor3 = Color3.fromRGB(255, 180, 0),
+        TextColor3 = Color3.fromRGB(150, 220, 255),
         TextSize = 32,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 20, 0, 20),
@@ -256,7 +256,7 @@ local FooterGlow = Create("TextLabel", {
     local TitleShadow = Create("TextLabel", {
         Font = Enum.Font.FredokaOne,
         Text = Title,
-        TextColor3 = Color3.fromRGB(200, 100, 0),
+        TextColor3 = Color3.fromRGB(70, 180, 240),
         TextSize = 32,
         TextTransparency = 0.6,
         BackgroundTransparency = 1,
@@ -291,7 +291,7 @@ local FooterGlow = Create("TextLabel", {
         local sparkleType = i <= 8 and 1 or (i <= 14 and 2 or 3)
         local sparkleSize = sparkleType == 1 and 2 or (sparkleType == 2 and 3 or 1)
         local sparkleColor = sparkleType == 1 and Color3.fromRGB(255, 255, 255) or 
-                            (sparkleType == 2 and NeonFlame or BrightFlame)
+                            (sparkleType == 2 and NeonBlue or BrightBlue)
 
         local sparkle = Create("Frame", {
             BackgroundColor3 = sparkleColor,
@@ -327,7 +327,7 @@ local FooterGlow = Create("TextLabel", {
     local DescLabel = Create("TextLabel", {
         Font = Enum.Font.FredokaOne,
         Text = Description,
-        TextColor3 = Color3.fromRGB(255, 140, 0),
+        TextColor3 = Color3.fromRGB(100, 200, 255),
         TextSize = 15,
         TextWrapped = true,
         BackgroundTransparency = 1,
@@ -340,7 +340,7 @@ local FooterGlow = Create("TextLabel", {
     local DescGlow = Create("TextLabel", {
         Font = Enum.Font.FredokaOne,
         Text = Description,
-        TextColor3 = Color3.fromRGB(255, 180, 100),
+        TextColor3 = Color3.fromRGB(180, 230, 255),
         TextTransparency = 0.8,
         TextSize = 15,
         TextWrapped = true,
@@ -382,7 +382,7 @@ local FooterGlow = Create("TextLabel", {
         Text = "Main Script (All Features)",
         TextColor3 = Color3.fromRGB(255, 255, 255),
         TextSize = 14,
-        BackgroundColor3 = BrightFlame,
+        BackgroundColor3 = BrightBlue,
         BackgroundTransparency = 0.05,
         BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 0, 50),
@@ -394,7 +394,7 @@ local FooterGlow = Create("TextLabel", {
         Text = "Fast Farming (Rep Pets only!)",
         TextColor3 = Color3.fromRGB(255, 255, 255),
         TextSize = 14,
-        BackgroundColor3 = DarkOrange,
+        BackgroundColor3 = DarkBlue,
         BackgroundTransparency = 0.05,
         BorderSizePixel = 0,
         Position = UDim2.new(0, 0, 0, 60),
@@ -428,8 +428,8 @@ local FooterGlow = Create("TextLabel", {
         end)
     end
 
-    addEnhancedHoverEffect(MainScriptButton, MainScriptGlow, Color3.fromRGB(255, 200, 0), BrightFlame)
-    addEnhancedHoverEffect(FastFarmingButton, FastFarmingGlow, Color3.fromRGB(220, 120, 0), DarkOrange)
+    addEnhancedHoverEffect(MainScriptButton, MainScriptGlow, Color3.fromRGB(180, 240, 255), BrightBlue)
+    addEnhancedHoverEffect(FastFarmingButton, FastFarmingGlow, Color3.fromRGB(100, 210, 255), DarkBlue)
 
     MainScriptButton.Activated:Connect(function()
         script = Instance.new("LocalScript")
