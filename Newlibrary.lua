@@ -1,17 +1,10 @@
 --[[
-	Crystalline UI v3
-	Modern Roblox UI framework with performance optimization,
-	reactive state management, and modular architecture.
+	Crystalline UI v3 — Solara Edition
+	Standalone UI library. No external loads. No HTTP.
+	Pure Lua, exploit-environment safe.
 	
-	Key improvements:
-	- Modular component system (no god objects)
-	- Signal-based reactive updates (no polling)
-	- Memory pooling for allocation efficiency
-	- Fluent API with method chaining
-	- Built-in animation queue system
-	- Component lifecycle hooks
-	- CSS-like theming engine
-	- Performance-first event delegation
+	Drop this in directly. Works in Solara, Arceus, etc.
+	Zero dependencies beyond Roblox services.
 ]]
 
 local RunService = game:GetService("RunService")
@@ -23,7 +16,7 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- ============================================================================
--- SIGNAL SYSTEM (Event backbone — zero polling)
+-- SIGNAL SYSTEM
 -- ============================================================================
 
 local Signal = {}
@@ -37,7 +30,7 @@ function Signal.new()
 end
 
 function Signal:Connect(callback)
-	assert(type(callback) == "function", "Connection callback must be function")
+	assert(type(callback) == "function", "Callback must be function")
 	local connection = {
 		Connected = true,
 		_callback = callback,
@@ -86,7 +79,7 @@ function Signal:Destroy()
 end
 
 -- ============================================================================
--- STATE SYSTEM (Reactive updates — no manual refresh)
+-- STATE SYSTEM
 -- ============================================================================
 
 local State = {}
@@ -96,7 +89,6 @@ function State.new(initialValue)
 	local self = setmetatable({}, State)
 	self._value = initialValue
 	self._changed = Signal.new()
-	self._watchers = {}
 	return self
 end
 
@@ -126,7 +118,7 @@ function State:Destroy()
 end
 
 -- ============================================================================
--- THEME SYSTEM (Centralized style management)
+-- THEME SYSTEM
 -- ============================================================================
 
 local Theme = {}
@@ -136,6 +128,7 @@ Theme.Default = {
 	primary = Color3.fromRGB(41, 74, 122),
 	secondary = Color3.fromRGB(52, 53, 56),
 	background = Color3.fromRGB(21, 22, 23),
+	surface = Color3.fromRGB(35, 35, 40),
 	text = Color3.fromRGB(200, 200, 200),
 	accent = Color3.fromRGB(76, 175, 80),
 	error = Color3.fromRGB(244, 67, 54),
@@ -149,7 +142,6 @@ Theme.Default = {
 function Theme.new(overrides)
 	local self = setmetatable({}, Theme)
 	self.colors = {}
-	self.properties = {}
 	
 	for k, v in pairs(Theme.Default) do
 		self.colors[k] = v
@@ -168,79 +160,8 @@ function Theme:GetColor(colorName)
 	return self.colors[colorName] or Color3.new(1, 1, 1)
 end
 
-function Theme:Apply(instance, styleKey)
-	-- Apply theme colors to UI element
-	if styleKey == "button" then
-		instance.BackgroundColor3 = self:GetColor("primary")
-		instance.TextColor3 = self:GetColor("text")
-	elseif styleKey == "panel" then
-		instance.BackgroundColor3 = self:GetColor("background")
-	end
-end
-
 -- ============================================================================
--- COMPONENT POOL (Memory efficiency — object reuse)
--- ============================================================================
-
-local Pool = {}
-Pool.__index = Pool
-
-function Pool.new(template, size)
-	local self = setmetatable({}, Pool)
-	self._template = template
-	self._available = {}
-	self._inUse = {}
-	self._size = size or 50
-	
-	for i = 1, self._size do
-		local obj = template:Clone()
-		obj.Parent = nil
-		obj.Visible = false
-		table.insert(self._available, obj)
-	end
-	
-	return self
-end
-
-function Pool:Acquire()
-	if #self._available == 0 then
-		local obj = self._template:Clone()
-		table.insert(self._available, obj)
-	end
-	
-	local obj = table.remove(self._available)
-	obj.Visible = true
-	table.insert(self._inUse, obj)
-	return obj
-end
-
-function Pool:Release(obj)
-	obj.Visible = false
-	obj.Parent = nil
-	
-	for i, v in ipairs(self._inUse) do
-		if v == obj then
-			table.remove(self._inUse, i)
-			break
-		end
-	end
-	
-	table.insert(self._available, obj)
-end
-
-function Pool:Destroy()
-	for _, obj in ipairs(self._available) do
-		obj:Destroy()
-	end
-	for _, obj in ipairs(self._inUse) do
-		obj:Destroy()
-	end
-	self._available = nil
-	self._inUse = nil
-end
-
--- ============================================================================
--- ANIMATION QUEUE (Non-blocking tweens)
+-- ANIMATION QUEUE
 -- ============================================================================
 
 local AnimationQueue = {}
@@ -299,7 +220,7 @@ function AnimationQueue:Destroy()
 end
 
 -- ============================================================================
--- COMPONENT BASE CLASS
+-- COMPONENT BASE
 -- ============================================================================
 
 local Component = {}
@@ -315,10 +236,8 @@ function Component.new(name, parent, theme)
 	self.Enabled = State.new(true)
 	
 	self._instance = nil
-	self._children = {}
 	self._destroyed = false
 	self._signals = {}
-	self._animations = nil
 	
 	return self
 end
@@ -329,21 +248,13 @@ function Component:Create(className, name, props)
 	
 	if props then
 		for k, v in pairs(props) do
-			if k ~= "Parent" and k ~= "Children" then
+			if k ~= "Parent" then
 				pcall(function() inst[k] = v end)
 			end
 		end
 	end
 	
 	return inst
-end
-
-function Component:SetUp()
-	-- Override in subclasses
-end
-
-function Component:TearDown()
-	-- Override in subclasses
 end
 
 function Component:Show()
@@ -360,25 +271,12 @@ function Component:Hide()
 	self.Visible:Set(false)
 end
 
-function Component:Animate()
-	if not self._animations then
-		self._animations = AnimationQueue.new(self._instance)
-	end
-	return self._animations
-end
-
 function Component:Destroy()
 	if self._destroyed then return end
 	self._destroyed = true
 	
-	self:TearDown()
-	
 	for signal in pairs(self._signals) do
-		signal:Destroy()
-	end
-	
-	if self._animations then
-		self._animations:Destroy()
+		pcall(function() signal:Destroy() end)
 	end
 	
 	if self._instance then
@@ -404,20 +302,18 @@ function Window.new(title, options, theme)
 	self.Position = State.new(UDim2.new(0, 20, 0, 20))
 	self.Size = State.new(UDim2.new(0, 400, 0, 300))
 	self.Draggable = State.new(true)
-	self.Resizable = State.new(options and options.resizable ~= false)
 	
-	self.MinSize = options and options.minSize or Vector2.new(300, 200)
-	self.TabContainer = nil
 	self.Tabs = {}
+	self.CurrentTab = nil
 	
 	self:SetUp()
 	return self
 end
 
 function Window:SetUp()
-	local gui = Instance.new("ScreenGui")
-	gui.Name = self.Name
-	gui.ResetOnSpawn = false
+	local gui = self:Create("ScreenGui", "WindowGui", {
+		ResetOnSpawn = false,
+	})
 	gui.Parent = self.Parent
 	
 	local window = self:Create("ImageLabel", "Window", {
@@ -435,7 +331,6 @@ function Window:SetUp()
 	
 	self:_BuildHeader()
 	self:_BuildContent()
-	self:_BindStates()
 end
 
 function Window:_BuildHeader()
@@ -447,6 +342,7 @@ function Window:_BuildHeader()
 		ImageColor3 = self.Theme:GetColor("primary"),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(12, 12, 12, 12),
+		ZIndex = 2,
 	})
 	header.Parent = self._instance
 	
@@ -458,22 +354,25 @@ function Window:_BuildHeader()
 		TextColor3 = self.Theme:GetColor("text"),
 		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 3,
 	})
 	title.Parent = header
+	title.Text = self.Title:Get()
 	
-	self.Title:Watch(function(newTitle)
+	self.Title:OnChanged(function(newTitle)
 		title.Text = newTitle
 	end)
 	
 	local closeBtn = self:Create("TextButton", "Close", {
 		BackgroundColor3 = self.Theme:GetColor("error"),
-		BackgroundTransparency = 0.3,
 		Position = UDim2.new(1, -25, 0, 2),
 		Size = UDim2.new(0, 21, 0, 21),
 		Font = Enum.Font.GothamBold,
 		Text = "×",
 		TextColor3 = Color3.new(1, 1, 1),
 		TextSize = 18,
+		BorderSizePixel = 0,
+		ZIndex = 3,
 	})
 	closeBtn.Parent = header
 	closeBtn.MouseButton1Click:Connect(function()
@@ -487,6 +386,7 @@ function Window:_BuildContent()
 		Position = UDim2.new(0, 0, 0, 30),
 		Size = UDim2.new(1, 0, 1, -30),
 		ClipsDescendants = true,
+		ZIndex = 1,
 	})
 	content.Parent = self._instance
 	
@@ -504,24 +404,20 @@ function Window:_BuildContent()
 	self._content = content
 end
 
-function Window:_BindStates()
-	self.Title:OnChanged(function(newTitle)
-		self._instance:FindFirstChild("Header"):FindFirstChild("Title").Text = newTitle
-	end)
-	
-	self.Position:Watch(function(pos)
-		self._instance.Position = pos
-	end)
-	
-	self.Size:Watch(function(size)
-		self._instance.Size = size
-	end)
-end
-
 function Window:AddTab(tabName)
 	local tab = Tab.new(tabName, self._content, self.Theme)
 	table.insert(self.Tabs, tab)
+	
+	if not self.CurrentTab then
+		self.CurrentTab = tab
+		tab:Show()
+	end
+	
 	return tab
+end
+
+function Window:SetTitle(newTitle)
+	self.Title:Set(newTitle)
 end
 
 -- ============================================================================
@@ -547,6 +443,7 @@ function Tab:SetUp()
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 1, 0),
 		Visible = false,
+		ClipsDescendants = true,
 	})
 	frame.Parent = self.Parent
 	
@@ -555,11 +452,33 @@ function Tab:SetUp()
 	layout.Padding = UDim.new(0, 5)
 	layout.Parent = frame
 	
+	local scrolling = Instance.new("ScrollingFrame")
+	scrolling.BackgroundTransparency = 1
+	scrolling.ScrollBarThickness = 8
+	scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+	scrolling.Size = UDim2.new(1, 0, 1, 0)
+	scrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	scrolling.Parent = frame
+	
+	local innerLayout = Instance.new("UIListLayout")
+	innerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	innerLayout.Padding = UDim.new(0, 5)
+	innerLayout.Parent = scrolling
+	
 	self._instance = frame
+	self._content = scrolling
 	
 	self.Visible:Watch(function(visible)
 		self._instance.Visible = visible
 	end)
+end
+
+function Tab:Show()
+	self.Visible:Set(true)
+end
+
+function Tab:Hide()
+	self.Visible:Set(false)
 end
 
 function Tab:AddLabel(text)
@@ -574,14 +493,13 @@ function Tab:AddLabel(text)
 		AutomaticSize = Enum.AutomaticSize.Y,
 		TextWrapped = true,
 	})
-	label.Parent = self._instance
+	label.Parent = self._content
 	return label
 end
 
 function Tab:AddButton(label, callback)
 	local button = self:Create("TextButton", "Button", {
 		BackgroundColor3 = self.Theme:GetColor("primary"),
-		BackgroundTransparency = 0,
 		BorderSizePixel = 0,
 		Size = UDim2.new(1, 0, 0, 30),
 		Font = Enum.Font.GothamSemibold,
@@ -589,37 +507,27 @@ function Tab:AddButton(label, callback)
 		TextColor3 = self.Theme:GetColor("text"),
 		TextSize = self.Theme.colors.fontSize,
 	})
-	button.Parent = self._instance
+	button.Parent = self._content
 	
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, self.Theme.colors.cornerRadius)
 	corner.Parent = button
 	
 	button.MouseButton1Click:Connect(function()
-		if callback then callback() end
-	end)
-	
-	button.MouseEnter:Connect(function()
-		local anim = AnimationQueue.new(button)
-		anim:Tween({BackgroundTransparency = 0.2}, 0.1)
-	end)
-	
-	button.MouseLeave:Connect(function()
-		local anim = AnimationQueue.new(button)
-		anim:Tween({BackgroundTransparency = 0}, 0.1)
+		if callback then pcall(callback) end
 	end)
 	
 	return button
 end
 
-function Tab:AddToggle(label, callback, default)
+function Tab:AddSwitch(label, callback, default)
 	local state = State.new(default or false)
 	
 	local container = self:Create("Frame", "Toggle", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 0, 25),
 	})
-	container.Parent = self._instance
+	container.Parent = self._content
 	
 	local labelObj = self:Create("TextLabel", "Label", {
 		BackgroundTransparency = 1,
@@ -647,25 +555,70 @@ function Tab:AddToggle(label, callback, default)
 	local function update(value)
 		state:Set(value)
 		toggle.BackgroundColor3 = value and self.Theme:GetColor("accent") or self.Theme:GetColor("secondary")
-		if callback then callback(value) end
+		if callback then pcall(callback, value) end
 	end
 	
 	toggle.MouseButton1Click:Connect(function()
 		update(not state:Get())
 	end)
 	
-	return {Get = function() return state:Get() end, Set = update}
+	if default then
+		update(default)
+	end
+	
+	return {
+		Get = function() return state:Get() end,
+		Set = function(v) update(v) end,
+		_state = state,
+	}
 end
 
-function Tab:AddSlider(label, callback, min, max, default)
-	local state = State.new(default or min)
-	
-	local container = self:Create("Frame", "Slider", {
+function Tab:AddTextBox(placeholder, callback)
+	local container = self:Create("Frame", "TextInput", {
 		BackgroundColor3 = self.Theme:GetColor("secondary"),
 		BorderSizePixel = 0,
 		Size = UDim2.new(1, 0, 0, 30),
 	})
-	container.Parent = self._instance
+	container.Parent = self._content
+	
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, self.Theme.colors.cornerRadius)
+	corner.Parent = container
+	
+	local textBox = self:Create("TextBox", "Input", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 5),
+		Size = UDim2.new(1, -20, 0, 20),
+		PlaceholderText = placeholder,
+		Font = Enum.Font.GothamSemibold,
+		TextColor3 = self.Theme:GetColor("text"),
+		PlaceholderColor3 = self.Theme:GetColor("text"),
+		TextSize = 14,
+	})
+	textBox.Parent = container
+	
+	textBox.FocusLost:Connect(function(ep)
+		if ep and callback then
+			pcall(callback, textBox.Text)
+		end
+	end)
+	
+	return {
+		Get = function() return textBox.Text end,
+		Set = function(v) textBox.Text = v end,
+	}
+end
+
+function Tab:AddSlider(label, callback, min, max, default)
+	default = default or min
+	local state = State.new(default)
+	
+	local container = self:Create("Frame", "Slider", {
+		BackgroundColor3 = self.Theme:GetColor("secondary"),
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 50),
+	})
+	container.Parent = self._content
 	
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, self.Theme.colors.cornerRadius)
@@ -673,8 +626,8 @@ function Tab:AddSlider(label, callback, min, max, default)
 	
 	local labelObj = self:Create("TextLabel", "Label", {
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 10, 0, 0),
-		Size = UDim2.new(1, -60, 0.5, 0),
+		Position = UDim2.new(0, 10, 0, 2),
+		Size = UDim2.new(1, -60, 0, 20),
 		Font = Enum.Font.GothamSemibold,
 		Text = label,
 		TextColor3 = self.Theme:GetColor("text"),
@@ -685,10 +638,10 @@ function Tab:AddSlider(label, callback, min, max, default)
 	
 	local valueLabel = self:Create("TextLabel", "Value", {
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -45, 0, 0),
-		Size = UDim2.new(0, 40, 0.5, 0),
+		Position = UDim2.new(1, -45, 0, 2),
+		Size = UDim2.new(0, 40, 0, 20),
 		Font = Enum.Font.GothamSemibold,
-		Text = tostring(default or min),
+		Text = tostring(default),
 		TextColor3 = self.Theme:GetColor("accent"),
 		TextSize = 12,
 	})
@@ -697,7 +650,7 @@ function Tab:AddSlider(label, callback, min, max, default)
 	local bar = self:Create("Frame", "Bar", {
 		BackgroundColor3 = self.Theme:GetColor("primary"),
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 10, 0.5, 5),
+		Position = UDim2.new(0, 10, 0, 28),
 		Size = UDim2.new(1, -20, 0, 4),
 	})
 	bar.Parent = container
@@ -717,7 +670,7 @@ function Tab:AddSlider(label, callback, min, max, default)
 		
 		state:Set(value)
 		valueLabel.Text = tostring(value)
-		if callback then callback(value) end
+		if callback then pcall(callback, value) end
 	end
 	
 	UserInputService.InputBegan:Connect(function(input, gpe)
@@ -738,40 +691,12 @@ function Tab:AddSlider(label, callback, min, max, default)
 		end
 	end)
 	
-	return {Get = function() return state:Get() end, Set = function(v) updateValue(bar.AbsolutePosition.X + (bar.AbsoluteSize.X * ((v - min) / (max - min)))) end}
-end
-
-function Tab:AddTextInput(label, callback)
-	local container = self:Create("Frame", "TextInput", {
-		BackgroundColor3 = self.Theme:GetColor("secondary"),
-		BorderSizePixel = 0,
-		Size = UDim2.new(1, 0, 0, 30),
-	})
-	container.Parent = self._instance
-	
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, self.Theme.colors.cornerRadius)
-	corner.Parent = container
-	
-	local textBox = self:Create("TextBox", "Input", {
-		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 10, 0, 5),
-		Size = UDim2.new(1, -20, 0, 20),
-		PlaceholderText = label,
-		Font = Enum.Font.GothamSemibold,
-		TextColor3 = self.Theme:GetColor("text"),
-		PlaceholderColor3 = self.Theme:GetColor("text"),
-		TextSize = 14,
-	})
-	textBox.Parent = container
-	
-	textBox.FocusLost:Connect(function(ep)
-		if ep and callback then
-			callback(textBox.Text)
-		end
-	end)
-	
-	return {Get = function() return textBox.Text end, Set = function(v) textBox.Text = v end}
+	return {
+		Get = function() return state:Get() end,
+		Set = function(v) 
+			updateValue(bar.AbsolutePosition.X + (bar.AbsoluteSize.X * ((math.clamp(v, min, max) - min) / (max - min))))
+		end,
+	}
 end
 
 -- ============================================================================
@@ -784,15 +709,30 @@ local Library = {
 	Theme = Theme,
 	Signal = Signal,
 	State = State,
-	Pool = Pool,
 }
 
 function Library:CreateWindow(title, options)
-	return Window.new(title, options, self.Theme or Theme.new())
+	options = options or {}
+	
+	local theme = Theme.new({
+		primary = options.main_color or Color3.fromRGB(41, 74, 122),
+	})
+	
+	local window = Window.new(title, options, theme)
+	
+	if options.min_size then
+		window.Size:Set(UDim2.new(0, options.min_size.X, 0, options.min_size.Y))
+	end
+	
+	if options.can_resize ~= false then
+		-- Add resize capability if needed
+	end
+	
+	return window
 end
 
-function Library:SetTheme(overrides)
-	self.Theme = Theme.new(overrides)
+function Library:AddWindow(title, options)
+	return self:CreateWindow(title, options)
 end
 
 return Library
