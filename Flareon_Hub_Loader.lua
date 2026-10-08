@@ -30,7 +30,7 @@ end
 function LoaderSystem:CreateLoader(Config)
     local Title = "Flareon Hub"
     local Description = Config.Description or "Choose your script..."
-    local MainScriptURL = Config.MainScriptURL or "https://raw.githubusercontent.com/silencedevs/SilenceScripts/refs/heads/main/Scripts/MuscleLegends/Main.luau"
+    local MainScriptURL = Config.MainScriptURL or "https://raw.githubusercontent.com/rafttkxGIT/sMod-FlareonHub/refs/heads/main/main.lua"
     local FastFarmingURL = Config.FastFarmingURL or "https://raw.githubusercontent.com/rafttkxGIT/sMod-FlareonHub/refs/heads/main/fast.lua"
     
     -- Flareon blue colors (right side sun)
