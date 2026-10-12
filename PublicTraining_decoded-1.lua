@@ -40,12 +40,12 @@ local function resolveDiscordIcon()
 	local makeFolder = Environment.makefolder
 	if type(customAsset) == "function" and type(writer) == "function" and type(decoder) == "function" then
 		pcall(function()
-			if type(folderExists) == "function" and type(makeFolder) == "function" and not folderExists("Young0xHub") then
-				makeFolder("Young0xHub")
+			if type(folderExists) == "function" and type(makeFolder) == "function" and not folderExists("FlareonHub") then
+				makeFolder("FlareonHub")
 			end
-			writer("Young0xHub/discord-white.png", decoder(DiscordIconData))
+			writer("FlareonHub/discord-white.png", decoder(DiscordIconData))
 		end)
-		local ok, asset = pcall(customAsset, "Young0xHub/discord-white.png")
+		local ok, asset = pcall(customAsset, "FlareonHub/discord-white.png")
 		if ok and type(asset) == "string" and asset ~= "" then
 			return asset
 		end
@@ -62,7 +62,7 @@ local CONFIG = {
 	PlaceId = 3623096087,
 	BackgroundAsset = "rbxassetid://93236131139308",
 	Discord = "https://discord.gg/young0xhub",
-	YouTube = "https://www.youtube.com/@Real_Young0x",
+	YouTube = "https://www.youtube.com/@NoticeManMyMan",
 	Colors = {
 		background = Color3.fromRGB(9, 5, 8),
 		surface = Color3.fromRGB(18, 9, 13),
