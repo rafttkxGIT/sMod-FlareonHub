@@ -61,7 +61,7 @@ end
 local CONFIG = {
 	PlaceId = 3623096087,
 	BackgroundAsset = "rbxassetid://93236131139308",
-	Discord = "https://discord.gg/young0xhub",
+	Discord = "https://discord.gg/5rVh2EWQbX",
 	YouTube = "https://www.youtube.com/@NoticeManMyMan",
 	Colors = {
 		background = Color3.fromRGB(9, 5, 8),
