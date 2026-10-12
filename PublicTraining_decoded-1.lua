@@ -482,12 +482,12 @@ local function loadBossConfig()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Young0xAutoBossUI"
+ScreenGui.Name = "FlareonHubAutoBossUI"
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 ScreenGui.DisplayOrder = 2147483000
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui:SetAttribute("Young0xBuild", AUTO_BOSS_BUILD)
+ScreenGui:SetAttribute("FlareonHubBuild", AUTO_BOSS_BUILD)
 ScreenGui:SetAttribute("Theme", "Halloween")
 
 local parent = CoreGui
@@ -594,7 +594,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.fromOffset(24, 0)
 Title.Size = UDim2.new(1, -48, 0, 30)
 Title.Font = Enum.Font.Garamond
-Title.Text = "🎃 Young0x Hub 🎃"
+Title.Text = "🎃 Flareon Hub 🎃"
 Title.TextColor3 = CONFIG.Colors.white
 Title.TextSize = 23
 Title.TextXAlignment = Enum.TextXAlignment.Center
